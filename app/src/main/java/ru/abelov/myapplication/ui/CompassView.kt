@@ -1,4 +1,4 @@
-package ru.abelov.myapplication
+package ru.abelov.myapplication.ui
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -6,7 +6,6 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import kotlinx.coroutines.*
 import ru.abelov.myapplication.R
-import kotlin.coroutines.*
 
 class CompassView  @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
 : SurfaceView(context, attrs, defStyleAttr), SurfaceHolder.Callback {
@@ -35,15 +34,18 @@ class CompassView  @JvmOverloads constructor(context: Context, attrs: AttributeS
         uiSccope.launch {
             while (isActive) {
                 drawCompass(holder)
-                angle++
+//                angle++
             }
         }
     }
 
-    fun drawCompass(holder: SurfaceHolder) {
-        Thread.sleep(300)
-        val canvas: Canvas? = holder.lockCanvas()
+    public fun set(angle : Int) {
+        this.angle = angle
+    }
 
+    suspend fun drawCompass(holder: SurfaceHolder) {
+        delay(300)
+        val canvas: Canvas? = holder.lockCanvas()
         canvas?.let {
             it.drawColor(0, PorterDuff.Mode.CLEAR)
             it.rotate(angle%360f, it.width / 2f, it.height / 2f)
