@@ -1,15 +1,21 @@
+package ru.abelov.myapplication
 import android.content.Context
-import android.graphics.PixelFormat
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import kotlinx.coroutines.*
+import ru.abelov.myapplication.R
 import kotlin.coroutines.*
 
 class CompassView  @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
 : SurfaceView(context, attrs, defStyleAttr), SurfaceHolder.Callback {
 
-    private var job : Job? = null
+    private val uiSccope = CoroutineScope(Dispatchers.Main + Job())
+    private val arrow = BitmapFactory.decodeResource(resources, R.drawable.arrow)
+    private val arrowRect = Rect(0, 0, arrow.width, arrow.height)
+    private var angle = 0
+
 
     init {
         holder.addCallback(this)
@@ -18,24 +24,32 @@ class CompassView  @JvmOverloads constructor(context: Context, attrs: AttributeS
     }
 
     override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 
     override fun surfaceDestroyed(p0: SurfaceHolder?) {
-        job?.cancelAndJoin()
+        uiSccope.coroutineContext.cancel()
     }
 
     override fun surfaceCreated(p0: SurfaceHolder?) {
-        job = GlobalScope.launch {
-
+        uiSccope.launch {
             while (isActive) {
                 drawCompass(holder)
+                angle++
             }
         }
     }
 
-    suspend fun drawCompass(holder: SurfaceHolder) {
+    fun drawCompass(holder: SurfaceHolder) {
+        Thread.sleep(300)
+        val canvas: Canvas? = holder.lockCanvas()
 
+        canvas?.let {
+            it.drawColor(0, PorterDuff.Mode.CLEAR)
+            it.rotate(angle%360f, it.width / 2f, it.height / 2f)
+            it.drawBitmap(arrow, arrowRect, Rect(0, 0, it.width, it.height), null)
+            holder.unlockCanvasAndPost(it)
+        }
     }
 
 }
